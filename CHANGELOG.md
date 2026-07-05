@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.1
+
+- Docs: badges and CI (stable + beta, weekly) — no code changes.
+
 ## 1.0.0
 
 Initial release.

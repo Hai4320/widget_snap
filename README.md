@@ -1,5 +1,11 @@
 # widget_snap
 
+[![pub package](https://img.shields.io/pub/v/widget_snap.svg)](https://pub.dev/packages/widget_snap)
+[![pub points](https://img.shields.io/pub/points/widget_snap)](https://pub.dev/packages/widget_snap/score)
+[![likes](https://img.shields.io/pub/likes/widget_snap)](https://pub.dev/packages/widget_snap/score)
+[![CI](https://github.com/Hai4320/widget_snap/actions/workflows/ci.yml/badge.svg)](https://github.com/Hai4320/widget_snap/actions/workflows/ci.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hai4320/widget_snap/blob/main/LICENSE)
+
 <p align="center">
   <img src="doc/banner.png" alt="widget_snap — turn any widget into a PNG, rendered offscreen" width="720">
 </p>
