@@ -1,0 +1,40 @@
+name: widget_snap
+description: >-
+  Export any widget to PNG — rendered offscreen, even content larger than the
+  screen. Pure Flutter render pipeline, zero dependencies, all platforms.
+version: 1.0.0
+repository: https://github.com/Hai4320/widget_snap
+
+topics:
+  - screenshot
+  - widget-to-image
+  - png
+  - export
+  - capture
+
+screenshots:
+  - description: Turn any widget into a PNG offscreen — banner exported by widget_snap itself.
+    path: doc/banner.png
+  - description: A report far taller than the screen, captured in a single call.
+    path: doc/demo_tall.png
+
+environment:
+  sdk: ^3.9.0
+  flutter: '>=3.35.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+platforms:
+  android:
+  ios:
+  linux:
+  macos:
+  web:
+  windows:
