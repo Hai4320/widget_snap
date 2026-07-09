@@ -4,7 +4,8 @@
 //
 // Loads real Roboto + MaterialIcons from the Flutter SDK cache so text and
 // icons render properly (the test environment's default font is blocky).
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_literals_to_create_immutables
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';
@@ -22,7 +23,8 @@ const _indigo = Color(0xFF4F46E5);
 const _violet = Color(0xFF7C3AED);
 
 Future<void> _loadFonts() async {
-  final dir = '${Platform.environment['FLUTTER_ROOT']}'
+  final dir =
+      '${Platform.environment['FLUTTER_ROOT']}'
       '/bin/cache/artifacts/material_fonts';
   ByteData bytes(String file) =>
       ByteData.sublistView(File('$dir/$file').readAsBytesSync());
@@ -58,117 +60,121 @@ void main() {
     await tester.runAsync(() async {
       final banner = await _banner().toPngBytes(ctx, width: 720, pixelRatio: 2);
       await File('doc/banner.png').writeAsBytes(banner);
-      final tall = await _tallReport().toPngBytes(ctx, width: 420, pixelRatio: 2);
+      final tall = await _tallReport().toPngBytes(
+        ctx,
+        width: 420,
+        pixelRatio: 2,
+      );
       await File('doc/demo_tall.png').writeAsBytes(tall);
     });
   });
 }
 
 Widget _pill(String label) => Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: .16),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 12,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
+  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  decoration: BoxDecoration(
+    color: Colors.white.withValues(alpha: .16),
+    borderRadius: BorderRadius.circular(999),
+  ),
+  child: Text(
+    label,
+    style: TextStyle(
+      color: Colors.white,
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+    ),
+  ),
+);
 
 Widget _banner() => Container(
-      padding: const EdgeInsets.fromLTRB(40, 36, 40, 36),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [_indigo, _violet],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
+  padding: const EdgeInsets.fromLTRB(40, 36, 40, 36),
+  decoration: BoxDecoration(
+    gradient: LinearGradient(
+      colors: [_indigo, _violet],
+      begin: Alignment.topLeft,
+      end: Alignment.bottomRight,
+    ),
+  ),
+  child: Row(
+    children: [
+      Expanded(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 44,
-                      height: 44,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: .16),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.center_focus_strong,
-                        color: Colors.white,
-                        size: 26,
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    Text(
-                      'widget_snap',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 32,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Turn any widget into a PNG. Rendered offscreen —\n'
-                  'even content larger than the screen.',
-                  style: TextStyle(
-                    color: Colors.white.withValues(alpha: .88),
-                    fontSize: 15.5,
-                    height: 1.45,
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: .16),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(
+                    Icons.center_focus_strong,
+                    color: Colors.white,
+                    size: 26,
                   ),
                 ),
-                const SizedBox(height: 18),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _pill('zero deps'),
-                    _pill('pure Flutter pipeline'),
-                    _pill('Android · iOS · Web · Desktop'),
-                  ],
+                const SizedBox(width: 14),
+                Text(
+                  'widget_snap',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 32,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 32),
-          _receiptCard(),
-        ],
-      ),
-    );
-
-Widget _receiptCard() {
-  Widget item(String label, String value) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Row(
-          children: [
-            Text(label, style: TextStyle(color: _muted, fontSize: 12.5)),
-            const Spacer(),
+            const SizedBox(height: 16),
             Text(
-              value,
+              'Turn any widget into a PNG. Rendered offscreen —\n'
+              'even content larger than the screen.',
               style: TextStyle(
-                color: _ink,
-                fontSize: 12.5,
-                fontWeight: FontWeight.w500,
+                color: Colors.white.withValues(alpha: .88),
+                fontSize: 15.5,
+                height: 1.45,
               ),
+            ),
+            const SizedBox(height: 18),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _pill('zero deps'),
+                _pill('pure Flutter pipeline'),
+                _pill('Android · iOS · Web · Desktop'),
+              ],
             ),
           ],
         ),
-      );
+      ),
+      const SizedBox(width: 32),
+      _receiptCard(),
+    ],
+  ),
+);
+
+Widget _receiptCard() {
+  Widget item(String label, String value) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(
+      children: [
+        Text(label, style: TextStyle(color: _muted, fontSize: 12.5)),
+        const Spacer(),
+        Text(
+          value,
+          style: TextStyle(
+            color: _ink,
+            fontSize: 12.5,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    ),
+  );
 
   return Container(
     width: 220,
@@ -278,90 +284,90 @@ Widget _tallReport() {
   ];
 
   Widget stat(String value, String label) => Expanded(
-        child: Container(
-          padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F5F9),
-            borderRadius: BorderRadius.circular(12),
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 14),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF1F5F9),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        children: [
+          Text(
+            value,
+            style: TextStyle(
+              color: _ink,
+              fontSize: 17,
+              fontWeight: FontWeight.w700,
+            ),
           ),
+          const SizedBox(height: 3),
+          Text(label, style: TextStyle(color: _muted, fontSize: 10.5)),
+        ],
+      ),
+    ),
+  );
+
+  Widget entry(int i, (String, String, String) e) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 9),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          margin: const EdgeInsets.only(top: 4),
+          decoration: BoxDecoration(
+            color: dots[i % dots.length],
+            shape: BoxShape.circle,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                value,
+                e.$1,
                 style: TextStyle(
                   color: _ink,
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 3),
-              Text(label, style: TextStyle(color: _muted, fontSize: 10.5)),
+              const SizedBox(height: 2),
+              Text(e.$2, style: TextStyle(color: _muted, fontSize: 11.5)),
             ],
           ),
         ),
-      );
-
-  Widget entry(int i, (String, String, String) e) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 9),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              margin: const EdgeInsets.only(top: 4),
-              decoration: BoxDecoration(
-                color: dots[i % dots.length],
-                shape: BoxShape.circle,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    e.$1,
-                    style: TextStyle(
-                      color: _ink,
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(e.$2, style: TextStyle(color: _muted, fontSize: 11.5)),
-                ],
-              ),
-            ),
-            Text(
-              e.$3,
-              style: TextStyle(
-                color: _indigo,
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
+        Text(
+          e.$3,
+          style: TextStyle(
+            color: _indigo,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
         ),
-      );
+      ],
+    ),
+  );
 
   Widget week(int n) => Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SizedBox(height: 18),
-          Text(
-            'WEEK $n',
-            style: TextStyle(
-              color: _faint,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
-            ),
-          ),
-          const SizedBox(height: 4),
-          for (final (i, e) in entries.indexed) entry(i + n, e),
-        ],
-      );
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      const SizedBox(height: 18),
+      Text(
+        'WEEK $n',
+        style: TextStyle(
+          color: _faint,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 1.2,
+        ),
+      ),
+      const SizedBox(height: 4),
+      for (final (i, e) in entries.indexed) entry(i + n, e),
+    ],
+  );
 
   return Container(
     padding: const EdgeInsets.all(26),

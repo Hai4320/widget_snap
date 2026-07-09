@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 
-import 'capture.dart';
+import 'package:widget_snap/src/capture.dart';
 
 /// `dart:io` convenience layer: `myWidget.toPngFile(context, filename: …)`.
 extension WidgetSnapPngFile on Widget {

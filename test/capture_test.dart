@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 
-import 'package:widget_snap/widget_snap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:widget_snap/widget_snap.dart';
 
 void main() {
   testWidgets('toPngBytes captures painted content, not a blank canvas', (
@@ -35,9 +35,7 @@ void main() {
         return (await codec.getNextFrame()).image;
       },
     );
-    final data = await tester.runAsync(
-      () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
-    );
+    final data = await tester.runAsync(() => image!.toByteData());
     // Center pixel must be red, not the white fallback background.
     final w = image!.width;
     final center = ((image.height ~/ 2) * w + w ~/ 2) * 4;
@@ -47,7 +45,7 @@ void main() {
     expect(rgba[center + 2], 0x00, reason: 'blue channel');
   });
 
-  testWidgets('Ink + overflowing Row content still paints (tree-export shape)', (
+  testWidgets('Ink + overflowing Row still paints (tree-export shape)', (
     tester,
   ) async {
     late BuildContext ctx;
@@ -87,15 +85,15 @@ void main() {
     // The 2px overflow is intentional; keep its warning from failing the test.
     final oldOnError = FlutterError.onError;
     FlutterError.onError = (_) {};
-    final bytes = await tester.runAsync(() => content.toPngBytes(ctx, width: 100));
+    final bytes = await tester.runAsync(
+      () => content.toPngBytes(ctx, width: 100),
+    );
     FlutterError.onError = oldOnError;
     final image = await tester.runAsync(() async {
       final codec = await ui.instantiateImageCodec(bytes!);
       return (await codec.getNextFrame()).image;
     });
-    final data = await tester.runAsync(
-      () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
-    );
+    final data = await tester.runAsync(() => image!.toByteData());
     final rgba = data!.buffer.asUint8List();
     // Pixel inside the Ink card away from the text glyphs
     // (logical (70,35) of the 80x40 card → physical scale = ratio).
@@ -130,7 +128,8 @@ void main() {
             child: SizedBox(width: 10, height: 10),
           ).toPngBytes(ctx, width: 100);
           return null;
-        } catch (e) {
+        } on Object catch (e) {
+          // Intentional catch-all: the test only cares that it throws.
           return e;
         }
       },

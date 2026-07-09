@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 
-import 'capture.dart';
-import 'save.dart';
+import 'package:widget_snap/src/capture.dart';
+import 'package:widget_snap/src/save.dart';
 
 /// Discoverable entry point named after the package: type `WidgetSnap.` and
 /// autocomplete shows the whole API. Each method is a one-line delegate to
@@ -18,14 +18,13 @@ abstract final class WidgetSnap {
     double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
-  }) =>
-      content.toPngBytes(
-        context,
-        width: width,
-        height: height,
-        pixelRatio: pixelRatio,
-        delay: delay,
-      );
+  }) => content.toPngBytes(
+    context,
+    width: width,
+    height: height,
+    pixelRatio: pixelRatio,
+    delay: delay,
+  );
 
   /// See [WidgetSnapPngFile.toPngFile]. Not supported on the web.
   static Future<String> pngFile(
@@ -36,13 +35,12 @@ abstract final class WidgetSnap {
     double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
-  }) =>
-      content.toPngFile(
-        context,
-        filename: filename,
-        width: width,
-        height: height,
-        pixelRatio: pixelRatio,
-        delay: delay,
-      );
+  }) => content.toPngFile(
+    context,
+    filename: filename,
+    width: width,
+    height: height,
+    pixelRatio: pixelRatio,
+    delay: delay,
+  );
 }
