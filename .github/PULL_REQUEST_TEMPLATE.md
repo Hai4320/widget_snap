@@ -3,7 +3,7 @@
 ## Summary
 
 ## Checklist
-- [ ] `dart analyze` passes with no warnings
-- [ ] `dart test` passes
+- [ ] `flutter analyze` passes with no warnings
+- [ ] `flutter test` passes
 - [ ] Updated CHANGELOG.md
 - [ ] Updated docs / README if behavior changed
