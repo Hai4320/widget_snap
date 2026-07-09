@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'capture.dart';
+import 'package:widget_snap/src/capture.dart';
 
 /// Web stub for the file convenience layer: browsers have no writable
 /// filesystem, so [toPngFile] throws. Same signature as the IO variant so

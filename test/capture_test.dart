@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 
-import 'package:widget_snap/widget_snap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:widget_snap/widget_snap.dart';
 
 void main() {
   testWidgets('toPngBytes captures painted content, not a blank canvas', (
@@ -29,13 +29,13 @@ void main() {
     );
     expect(bytes, isNotNull);
 
-    final image = await tester.runAsync(() async {
-      final codec = await ui.instantiateImageCodec(bytes!);
-      return (await codec.getNextFrame()).image;
-    });
-    final data = await tester.runAsync(
-      () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
+    final image = await tester.runAsync(
+      () async {
+        final codec = await ui.instantiateImageCodec(bytes!);
+        return (await codec.getNextFrame()).image;
+      },
     );
+    final data = await tester.runAsync(() => image!.toByteData());
     // Center pixel must be red, not the white fallback background.
     final w = image!.width;
     final center = ((image.height ~/ 2) * w + w ~/ 2) * 4;
@@ -45,7 +45,7 @@ void main() {
     expect(rgba[center + 2], 0x00, reason: 'blue channel');
   });
 
-  testWidgets('Ink + overflowing Row content still paints (tree-export shape)', (
+  testWidgets('Ink + overflowing Row still paints (tree-export shape)', (
     tester,
   ) async {
     late BuildContext ctx;
@@ -93,9 +93,7 @@ void main() {
       final codec = await ui.instantiateImageCodec(bytes!);
       return (await codec.getNextFrame()).image;
     });
-    final data = await tester.runAsync(
-      () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
-    );
+    final data = await tester.runAsync(() => image!.toByteData());
     final rgba = data!.buffer.asUint8List();
     // Pixel inside the Ink card away from the text glyphs
     // (logical (70,35) of the 80x40 card → physical scale = ratio).
@@ -122,17 +120,20 @@ void main() {
     // Tooltip requires an Overlay the offscreen tree doesn't have. Without the
     // fail-loud guard this silently becomes a 100000x100000 ErrorWidget and a
     // garbage export.
-    final result = await tester.runAsync(() async {
-      try {
-        await const Tooltip(
-          message: 'x',
-          child: SizedBox(width: 10, height: 10),
-        ).toPngBytes(ctx, width: 100);
-        return null;
-      } catch (e) {
-        return e;
-      }
-    });
+    final result = await tester.runAsync(
+      () async {
+        try {
+          await const Tooltip(
+            message: 'x',
+            child: SizedBox(width: 10, height: 10),
+          ).toPngBytes(ctx, width: 100);
+          return null;
+        } on Object catch (e) {
+          // Intentional catch-all: the test only cares that it throws.
+          return e;
+        }
+      },
+    );
     expect(result, isNotNull, reason: 'export must throw, not return bytes');
   });
 }

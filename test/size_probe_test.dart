@@ -1,8 +1,8 @@
 import 'dart:ui' as ui;
 
-import 'package:widget_snap/widget_snap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:widget_snap/widget_snap.dart';
 
 void main() {
   testWidgets('image width matches requested width, not content intrinsics', (
@@ -37,7 +37,10 @@ void main() {
                 color: const Color(0xFF2A5BD7),
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: const Text('root', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'root',
+                style: TextStyle(color: Colors.white),
+              ),
             ),
           ),
           Container(

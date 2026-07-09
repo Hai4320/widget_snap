@@ -4,7 +4,8 @@
 //
 // Loads real Roboto + MaterialIcons from the Flutter SDK cache so text and
 // icons render properly (the test environment's default font is blocky).
-// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables
+// ignore_for_file: prefer_const_constructors
+// ignore_for_file: prefer_const_literals_to_create_immutables
 // ignore_for_file: use_build_context_synchronously
 
 import 'dart:io';

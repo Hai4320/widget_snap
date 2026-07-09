@@ -37,7 +37,9 @@ This is a published library — docs are part of the API surface:
 
 ## Quality requirements
 
-- `flutter analyze` must be 100% clean — a lint is a failure.
+- `flutter analyze` must be 100% clean — a lint is a failure. Lint set is
+  `very_good_analysis` (strict: 80-char lines, package imports, dartdoc on
+  public members…).
 - Every change ships with tests, especially anything in `lib/src/capture.dart`.
   Behavior changes need tests on **both VM and web** (`make check` covers both).
 - **Zero dependencies is a feature.** Never add a runtime dependency to

@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
@@ -29,25 +30,21 @@ extension WidgetSnapPng on Widget {
   }) async {
     // Pin the given axis; the other grows to fit. Default to the current
     // view's width (matches what the user sees) only when neither axis is set.
-    if (width == null && height == null) {
-      width = MediaQuery.sizeOf(context).width;
-    }
+    final pinnedWidth =
+        width ?? (height == null ? MediaQuery.sizeOf(context).width : null);
     // ponytail: clamp by the pinned axis (the larger, if both) — the GPU
     // texture cap (~4096px on low-end devices) would clip or OOM huge canvases.
     // The *growing* axis can still exceed the cap; revisit with tiled capture
     // if users hit it.
     final cap = [
-      width,
+      pinnedWidth,
       height,
     ].whereType<double>().reduce((a, b) => a > b ? a : b);
-    // A pinned axis larger than the cap makes 4096/cap < 1.0, which would make
-    // clamp's upper bound < lower and throw. Floor it at 1.0: we never
-    // downscale below native, so the pinned axis just rides over the cap (same
-    // caveat as the growing axis).
-    final maxRatio = 4096 / cap;
-    final ratio = pixelRatio
-        .clamp(1.0, maxRatio < 1.0 ? 1.0 : maxRatio)
-        .toDouble();
+    // A pinned axis larger than the cap makes 4096/cap < 1.0. We never
+    // downscale below native, so floor the allowed maximum at 1.0: the pinned
+    // axis just rides over the cap (same caveat as the growing axis).
+    final maxRatio = math.max(1, 4096 / cap).toDouble();
+    final ratio = math.min(math.max(pixelRatio, 1), maxRatio).toDouble();
     final flutterView = View.of(context);
 
     final pipelineOwner = PipelineOwner();
@@ -68,8 +65,8 @@ extension WidgetSnapPng on Widget {
     // Pin each given axis (min == max); leave the other unbounded so the
     // RenderView sizes the child to its content along it.
     final constraints = BoxConstraints(
-      minWidth: width ?? 0,
-      maxWidth: width ?? double.infinity,
+      minWidth: pinnedWidth ?? 0,
+      maxWidth: pinnedWidth ?? double.infinity,
       minHeight: height ?? 0,
       maxHeight: height ?? double.infinity,
     );

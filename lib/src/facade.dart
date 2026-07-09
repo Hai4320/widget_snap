@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 
-import 'capture.dart';
-import 'save.dart';
+import 'package:widget_snap/src/capture.dart';
+import 'package:widget_snap/src/save.dart';
 
 /// Discoverable entry point named after the package: type `WidgetSnap.` and
 /// autocomplete shows the whole API. Each method is a one-line delegate to

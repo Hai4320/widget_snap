@@ -1,5 +1,5 @@
-/// Widget → PNG export, as extension methods on [Widget] — or via the
-/// [WidgetSnap] facade if you prefer a named entry point:
+/// Widget → PNG export, as extension methods on `Widget` — or via the
+/// `WidgetSnap` facade if you prefer a named entry point:
 ///
 /// ```dart
 /// final bytes = await myWidget.toPngBytes(context);           // core
