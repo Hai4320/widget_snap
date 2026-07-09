@@ -4,6 +4,11 @@ Internal maintainer doc. Every version published to pub.dev is **immutable**
 (no edits/deletes, only a 7-day retract window) — walk the whole checklist
 before pulling the trigger.
 
+Automation: `make release-check` runs every gate below (steps 1, 4, plus
+version/CHANGELOG/tag consistency) and stops before anything irreversible;
+`make release` adds publish + tag + GitHub release (steps 6–7). This
+walkthrough stays the source of truth for *what* the gates mean.
+
 ## 1. Code & tests
 
 ```sh

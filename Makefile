@@ -1,5 +1,5 @@
 # Targets mirror the checklist in doc/RELEASING.md
-.PHONY: get format analyze test test-web images check
+.PHONY: get format analyze test test-web images check release-check release
 
 get:
 	flutter pub get
@@ -20,3 +20,9 @@ images:
 	flutter test tool/readme_images.dart
 
 check: format analyze test test-web
+
+release-check:
+	tool/release.sh
+
+release:
+	tool/release.sh --publish
