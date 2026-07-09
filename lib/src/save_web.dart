@@ -13,6 +13,7 @@ extension WidgetSnapPngFile on Widget {
     BuildContext context, {
     required String filename,
     double? width,
+    double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
   }) async {

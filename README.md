@@ -22,7 +22,7 @@ package, no platform code. Only `flutter` itself, which is why it runs on
 ## Features
 
 - Capture any widget — mounted or not, larger than the screen or not.
-- Width-driven layout: you pick the width, height grows to fit the content.
+- Size-driven layout: pin the width **or** the height (or both); the other axis grows to fit the content.
 - Inherits your app's theme, `MediaQuery`, and text direction via `context`.
 - Fails loud on build errors instead of silently exporting a blank image.
 - Two-layer API: pure bytes (core) or a temp-file path (convenience).
@@ -66,6 +66,7 @@ import 'package:widget_snap/widget_snap.dart';
 final bytes = await myWidget.toPngBytes(
   context,        // carries inherited theme/media/direction into the offscreen tree
   width: 1080,    // optional; default = current view width. Height grows to fit.
+  // height: 720, // or pin the height instead, and let the width grow (wide content)
 );
 // upload, preview in-memory (Image.memory), custom storage ...
 
@@ -91,9 +92,10 @@ final path  = await WidgetSnap.pngFile(myWidget, context, filename: 'export.png'
 | Param | Required | Description |
 |---|---|---|
 | `context` | ✓ | Source of inherited theme, `MediaQuery`, and text direction. |
-| `width` | — | Target width in logical pixels, default = current view width. Height auto-fits the content. |
+| `width` | — | Target width in logical pixels. Default = current view width (when `height` is also unset); the unpinned axis grows to fit the content. |
+| `height` | — | Target height in logical pixels. Pin this for naturally-wide content (timelines, charts) and let the width grow. |
 | `filename` | file variant only | Output filename (written under the system temp dir). |
-| `pixelRatio` | — | Raster scale, default `2.5`. Clamped so `width × pixelRatio ≤ 4096`. |
+| `pixelRatio` | — | Raster scale, default `2.5`. Clamped so the pinned axis × `pixelRatio` ≤ 4096. |
 | `delay` | — | Wait before capture so async images (network/asset) resolve; default zero. |
 
 `toPngBytes` returns the PNG `Uint8List`; `toPngFile` returns the written
@@ -124,10 +126,11 @@ gallery, upload, …).
 - **No `MaterialApp` needed.** The offscreen tree wraps your widget in a white
   `Material` + `Directionality` + `MediaQuery`, so `Ink`, `InkWell`, and
   `Text` render as in-app.
-- **Width is clamped, height is not.** `pixelRatio` is reduced so the
-  rasterized *width* stays under the ~4096px GPU texture cap on low-end
-  devices. Very **tall** documents can still exceed the cap — if you hit
-  clipping or OOM, lower `pixelRatio`.
+- **The pinned axis is clamped, the growing one is not.** `pixelRatio` is
+  reduced so the rasterized *pinned* axis stays under the ~4096px GPU texture
+  cap on low-end devices. A document that grows large along the **unpinned**
+  axis can still exceed the cap — if you hit clipping or OOM, lower
+  `pixelRatio`.
 - **No `Overlay` in the offscreen tree.** Widgets that require an `Overlay` /
   `Navigator` ancestor (`Tooltip`, dropdowns, anything that pops routes) throw
   during the offscreen build. The export fails loudly with that error instead
@@ -153,5 +156,5 @@ gallery, upload, …).
 
 - JPEG output (quality knob) for photo-heavy content.
 - `backgroundColor` / `theme:` overrides for the offscreen tree.
-- Exact `targetSize` (width **and** height), tiled capture for very tall docs.
+- Tiled capture for documents that exceed the GPU texture cap along the growing axis.
 - PDF export (pagination, headers/footers, bookmarks) as a separate layer.

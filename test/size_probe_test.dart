@@ -86,4 +86,35 @@ void main() {
     debugPrint('IMAGE ${image!.width} x ${image.height}');
     expect(image.width, (387 * 2.5).round(), reason: 'requested width * ratio');
   });
+
+  testWidgets('image height matches requested height, width grows to content', (
+    tester,
+  ) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+
+    // Naturally-wide content: a fixed-size box, no width constraint. Pinning
+    // height should size the image height; width follows the content (200).
+    const content = SizedBox(width: 200, height: 80);
+
+    final bytes = await tester.runAsync(
+      () => content.toPngBytes(ctx, height: 120),
+    );
+    final image = await tester.runAsync(() async {
+      final codec = await ui.instantiateImageCodec(bytes!);
+      return (await codec.getNextFrame()).image;
+    });
+    debugPrint('IMAGE ${image!.width} x ${image.height}');
+    expect(image.height, (120 * 2.5).round(), reason: 'requested height * ratio');
+    expect(image.width, (200 * 2.5).round(), reason: 'content width * ratio');
+  });
 }
