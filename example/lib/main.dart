@@ -29,6 +29,16 @@ class _DemoScreenState extends State<DemoScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
+        // Pin one axis; the other grows to fit the content. Here the content
+        // is tall and narrow, so we pin the width and let the height grow:
+        //   width: 320   → fixed width, height auto-fits (this demo)
+        //   height: 320  → fixed height, width auto-fits (wide content:
+        //                  timelines, horizontal charts)
+        //   width + height together → fixed box (content clips if larger)
+        //   neither      → defaults to the current view's width
+        // pixelRatio (default 2.5) is the raster scale, clamped so the pinned
+        // axis stays under the ~4096px GPU cap. delay: lets async images
+        // (network/asset) resolve before capture.
         final b = await _content().toPngBytes(context, width: 320);
         if (mounted) setState(() => _bytes = b);
       } catch (e) {
