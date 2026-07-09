@@ -29,12 +29,10 @@ void main() {
     );
     expect(bytes, isNotNull);
 
-    final image = await tester.runAsync(
-      () async {
-        final codec = await ui.instantiateImageCodec(bytes!);
-        return (await codec.getNextFrame()).image;
-      },
-    );
+    final image = await tester.runAsync(() async {
+      final codec = await ui.instantiateImageCodec(bytes!);
+      return (await codec.getNextFrame()).image;
+    });
     final data = await tester.runAsync(
       () => image!.toByteData(format: ui.ImageByteFormat.rawRgba),
     );
@@ -87,7 +85,9 @@ void main() {
     // The 2px overflow is intentional; keep its warning from failing the test.
     final oldOnError = FlutterError.onError;
     FlutterError.onError = (_) {};
-    final bytes = await tester.runAsync(() => content.toPngBytes(ctx, width: 100));
+    final bytes = await tester.runAsync(
+      () => content.toPngBytes(ctx, width: 100),
+    );
     FlutterError.onError = oldOnError;
     final image = await tester.runAsync(() async {
       final codec = await ui.instantiateImageCodec(bytes!);
@@ -122,19 +122,17 @@ void main() {
     // Tooltip requires an Overlay the offscreen tree doesn't have. Without the
     // fail-loud guard this silently becomes a 100000x100000 ErrorWidget and a
     // garbage export.
-    final result = await tester.runAsync(
-      () async {
-        try {
-          await const Tooltip(
-            message: 'x',
-            child: SizedBox(width: 10, height: 10),
-          ).toPngBytes(ctx, width: 100);
-          return null;
-        } catch (e) {
-          return e;
-        }
-      },
-    );
+    final result = await tester.runAsync(() async {
+      try {
+        await const Tooltip(
+          message: 'x',
+          child: SizedBox(width: 10, height: 10),
+        ).toPngBytes(ctx, width: 100);
+        return null;
+      } catch (e) {
+        return e;
+      }
+    });
     expect(result, isNotNull, reason: 'export must throw, not return bytes');
   });
 }

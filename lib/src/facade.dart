@@ -18,14 +18,13 @@ abstract final class WidgetSnap {
     double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
-  }) =>
-      content.toPngBytes(
-        context,
-        width: width,
-        height: height,
-        pixelRatio: pixelRatio,
-        delay: delay,
-      );
+  }) => content.toPngBytes(
+    context,
+    width: width,
+    height: height,
+    pixelRatio: pixelRatio,
+    delay: delay,
+  );
 
   /// See [WidgetSnapPngFile.toPngFile]. Not supported on the web.
   static Future<String> pngFile(
@@ -36,13 +35,12 @@ abstract final class WidgetSnap {
     double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
-  }) =>
-      content.toPngFile(
-        context,
-        filename: filename,
-        width: width,
-        height: height,
-        pixelRatio: pixelRatio,
-        delay: delay,
-      );
+  }) => content.toPngFile(
+    context,
+    filename: filename,
+    width: width,
+    height: height,
+    pixelRatio: pixelRatio,
+    delay: delay,
+  );
 }

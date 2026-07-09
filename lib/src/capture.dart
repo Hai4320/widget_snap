@@ -45,7 +45,9 @@ extension WidgetSnapPng on Widget {
     // downscale below native, so the pinned axis just rides over the cap (same
     // caveat as the growing axis).
     final maxRatio = 4096 / cap;
-    final ratio = pixelRatio.clamp(1.0, maxRatio < 1.0 ? 1.0 : maxRatio).toDouble();
+    final ratio = pixelRatio
+        .clamp(1.0, maxRatio < 1.0 ? 1.0 : maxRatio)
+        .toDouble();
     final flutterView = View.of(context);
 
     final pipelineOwner = PipelineOwner();

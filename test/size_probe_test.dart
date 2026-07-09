@@ -37,17 +37,16 @@ void main() {
                 color: const Color(0xFF2A5BD7),
                 borderRadius: BorderRadius.circular(15),
               ),
-              child: const Text(
-                'root',
-                style: TextStyle(color: Colors.white),
-              ),
+              child: const Text('root', style: TextStyle(color: Colors.white)),
             ),
           ),
           Container(
             margin: const EdgeInsets.only(left: 13, top: 4),
             padding: const EdgeInsets.only(top: 4),
             decoration: const BoxDecoration(
-              border: Border(left: BorderSide(color: Color(0xFFC9D5EE), width: 2)),
+              border: Border(
+                left: BorderSide(color: Color(0xFFC9D5EE), width: 2),
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -62,7 +61,11 @@ void main() {
                       margin: const EdgeInsets.only(top: 18),
                       color: const Color(0xFFC9D5EE),
                     ),
-                    Container(width: 320, height: 40, color: const Color(0xFFEEF2FB)),
+                    Container(
+                      width: 320,
+                      height: 40,
+                      color: const Color(0xFFEEF2FB),
+                    ),
                   ],
                 ),
               ],
@@ -114,7 +117,11 @@ void main() {
       return (await codec.getNextFrame()).image;
     });
     debugPrint('IMAGE ${image!.width} x ${image.height}');
-    expect(image.height, (120 * 2.5).round(), reason: 'requested height * ratio');
+    expect(
+      image.height,
+      (120 * 2.5).round(),
+      reason: 'requested height * ratio',
+    );
     expect(image.width, (200 * 2.5).round(), reason: 'content width * ratio');
   });
 
