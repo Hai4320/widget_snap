@@ -4,6 +4,7 @@
 [![pub points](https://img.shields.io/pub/points/widget_snap)](https://pub.dev/packages/widget_snap/score)
 [![likes](https://img.shields.io/pub/likes/widget_snap)](https://pub.dev/packages/widget_snap/score)
 [![CI](https://github.com/Hai4320/widget_snap/actions/workflows/ci.yml/badge.svg)](https://github.com/Hai4320/widget_snap/actions/workflows/ci.yml)
+[![style: very good analysis](https://img.shields.io/badge/style-very_good_analysis-B22C89.svg)](https://pub.dev/packages/very_good_analysis)
 [![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Hai4320/widget_snap/blob/main/LICENSE)
 
 <p align="center">
