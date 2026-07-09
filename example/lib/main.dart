@@ -21,7 +21,8 @@ class DemoScreen extends StatefulWidget {
 }
 
 class _DemoScreenState extends State<DemoScreen> {
-  Uint8List? _bytes;
+  Uint8List? _bytes; // width-pinned: tall, narrow content
+  Uint8List? _wideBytes; // height-pinned: wide, short content
   Object? _error;
 
   @override
@@ -29,23 +30,44 @@ class _DemoScreenState extends State<DemoScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       try {
-        // Pin one axis; the other grows to fit the content. Here the content
-        // is tall and narrow, so we pin the width and let the height grow:
-        //   width: 320   → fixed width, height auto-fits (this demo)
-        //   height: 320  → fixed height, width auto-fits (wide content:
-        //                  timelines, horizontal charts)
+        // Pin one axis; the other grows to fit the content.
         //   width + height together → fixed box (content clips if larger)
         //   neither      → defaults to the current view's width
         // pixelRatio (default 2.5) is the raster scale, clamped so the pinned
         // axis stays under the ~4096px GPU cap. delay: lets async images
         // (network/asset) resolve before capture.
+
+        // Tall + narrow → pin the width, height auto-fits.
         final b = await _content().toPngBytes(context, width: 320);
-        if (mounted) setState(() => _bytes = b);
+        if (!mounted) return;
+        // Wide + short (a chart) → pin the height, width auto-fits.
+        final w = await _wideContent().toPngBytes(context, height: 140);
+        if (!mounted) return;
+        setState(() {
+          _bytes = b;
+          _wideBytes = w;
+        });
       } catch (e) {
         if (mounted) setState(() => _error = e);
       }
     });
   }
+
+  /// Wide, short content: a bar chart with no intrinsic width constraint —
+  /// the case that motivated pinning height instead of width.
+  Widget _wideContent() => Row(
+    mainAxisSize: MainAxisSize.min,
+    crossAxisAlignment: CrossAxisAlignment.end,
+    children: [
+      for (final h in const [50.0, 95.0, 65.0, 110.0, 40.0, 85.0, 70.0, 100.0])
+        Container(
+          width: 28,
+          height: h,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          color: const Color(0xFF2A5BD7),
+        ),
+    ],
+  );
 
   Widget _content() => Column(
     mainAxisSize: MainAxisSize.min,
@@ -84,7 +106,7 @@ class _DemoScreenState extends State<DemoScreen> {
           const Text('LIVE:'),
           _content(),
           const Divider(height: 32),
-          const Text('CAPTURED:'),
+          const Text('CAPTURED (width: 320 — height grows):'),
           if (_error != null) Text('ERROR: $_error'),
           if (_bytes == null && _error == null) const Text('capturing…'),
           if (_bytes != null)
@@ -92,6 +114,17 @@ class _DemoScreenState extends State<DemoScreen> {
               color: const Color(0xFFEEEEEE),
               // Show at the captured logical width for a 1:1 comparison.
               child: Image.memory(_bytes!, width: 320),
+            ),
+          const Divider(height: 32),
+          const Text('CAPTURED (height: 140 — width grows):'),
+          if (_wideBytes != null)
+            // Wide capture: scroll horizontally; show at captured logical height.
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Container(
+                color: const Color(0xFFEEEEEE),
+                child: Image.memory(_wideBytes!, height: 140),
+              ),
             ),
         ],
       ),
