@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.1.0
+## Unreleased
 
 - Add optional `height` param to `toPngBytes` / `toPngFile` / `WidgetSnap.*`.
   Pin the width **or** the height (or both); the unpinned axis grows to fit.

@@ -2,7 +2,7 @@ name: widget_snap
 description: >-
   Export any widget to PNG — rendered offscreen, even content larger than the
   screen. Pure Flutter render pipeline, zero dependencies, all platforms.
-version: 1.1.0
+version: 1.0.1
 repository: https://github.com/Hai4320/widget_snap
 
 topics:

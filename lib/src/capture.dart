@@ -40,7 +40,12 @@ extension WidgetSnapPng on Widget {
       width,
       height,
     ].whereType<double>().reduce((a, b) => a > b ? a : b);
-    final ratio = pixelRatio.clamp(1.0, 4096 / cap).toDouble();
+    // A pinned axis larger than the cap makes 4096/cap < 1.0, which would make
+    // clamp's upper bound < lower and throw. Floor it at 1.0: we never
+    // downscale below native, so the pinned axis just rides over the cap (same
+    // caveat as the growing axis).
+    final maxRatio = 4096 / cap;
+    final ratio = pixelRatio.clamp(1.0, maxRatio < 1.0 ? 1.0 : maxRatio).toDouble();
     final flutterView = View.of(context);
 
     final pipelineOwner = PipelineOwner();

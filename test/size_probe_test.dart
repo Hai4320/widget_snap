@@ -117,4 +117,32 @@ void main() {
     expect(image.height, (120 * 2.5).round(), reason: 'requested height * ratio');
     expect(image.width, (200 * 2.5).round(), reason: 'content width * ratio');
   });
+
+  testWidgets('pinned axis over the GPU cap floors ratio to 1.0, no crash', (
+    tester,
+  ) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+
+    // width > 4096 → 4096/cap < 1.0; ratio must floor at 1.0 instead of
+    // throwing ArgumentError from clamp(lower > upper).
+    const content = SizedBox(width: 5000, height: 40);
+    final bytes = await tester.runAsync(
+      () => content.toPngBytes(ctx, width: 5000),
+    );
+    final image = await tester.runAsync(() async {
+      final codec = await ui.instantiateImageCodec(bytes!);
+      return (await codec.getNextFrame()).image;
+    });
+    expect(image!.width, 5000, reason: 'ratio floored to 1.0');
+  });
 }
