@@ -1,97 +1,102 @@
-# Quy trình release widget_snap
+# widget_snap release process
 
-Tài liệu nội bộ cho maintainer. Mỗi version publish lên pub.dev là **bất biến**
-(không sửa/xóa được, chỉ retract trong 7 ngày) — đi hết checklist trước khi bấm.
+Internal maintainer doc. Every version published to pub.dev is **immutable**
+(no edits/deletes, only a 7-day retract window) — walk the whole checklist
+before pulling the trigger.
 
-## 1. Code & kiểm thử
+## 1. Code & tests
 
 ```sh
-flutter analyze                                        # phải sạch 100% (lint = fail)
-flutter test                                           # unit/widget tests trên VM
-flutter test --platform chrome test/capture_test.dart  # verify runtime web
+flutter analyze                                        # must be 100% clean (lint = fail)
+flutter test                                           # unit/widget tests on the VM
+flutter test --platform chrome test/capture_test.dart  # verify web runtime
 ```
 
-- Sửa gì thêm test đó — đặc biệt mọi thay đổi trong `lib/src/capture.dart`.
-- Đổi hành vi hiển thị/capture → chạy example trên simulator xem bằng mắt:
-  `cd example && flutter run`.
-- Đổi hình minh họa README → regenerate bằng chính package:
-  `flutter test tool/readme_images.dart` (lưu ý: font Roboto không có glyph `→`,
-  đừng dùng trong text của hình).
+- Every change ships with tests — especially anything in `lib/src/capture.dart`.
+- Display/capture behavior changed → run the example on a simulator and eyeball
+  it: `cd example && flutter run`.
+- README images changed → regenerate with the package itself:
+  `flutter test tool/readme_images.dart` (note: the Roboto font has no `→`
+  glyph, don't use it in image text).
 
-## 2. Chọn version (semver — API đã cam kết từ 1.0.0)
+## 2. Pick a version (semver — API committed since 1.0.0)
 
-| Bump | Khi nào |
+| Bump | When |
 |---|---|
-| PATCH `x.y.Z` | Sửa bug, sửa docs/README, không đổi API |
-| MINOR `x.Y.0` | Thêm tính năng/tham số mới, không phá code người dùng |
-| MAJOR `X.0.0` | Breaking: đổi signature/hành vi của `toPngBytes` / `toPngFile` / `WidgetSnap`, nâng SDK tối thiểu |
+| PATCH `x.y.Z` | Bug fixes, docs/README fixes, no API change |
+| MINOR `x.Y.0` | New feature/parameter, doesn't break user code |
+| MAJOR `X.0.0` | Breaking: signature/behavior change of `toPngBytes` / `toPngFile` / `WidgetSnap`, raising the minimum SDK |
 
-Cập nhật `version:` trong `pubspec.yaml`.
+Update `version:` in `pubspec.yaml`.
 
-- Nâng constraint `sdk:`/`flutter:` là breaking với người đang ở version cũ →
-  tối thiểu MINOR, cân nhắc MAJOR.
-- Hạ/nới constraint → phải test thật bằng SDK cũ (`fvm`), không đoán.
+- Raising the `sdk:`/`flutter:` constraint breaks users on older versions →
+  MINOR at minimum, consider MAJOR.
+- Lowering/widening a constraint → actually test with the old SDK (`fvm`),
+  don't guess.
 
-## 3. Cập nhật tài liệu
+## 3. Update docs
 
-- `CHANGELOG.md`: thêm entry mới **lên đầu**, viết theo góc nhìn người dùng
-  (cái gì đổi, migrate thế nào nếu breaking).
-- `README.md`: cập nhật nếu API/tham số/limits đổi; cập nhật dòng
-  "Verified on Flutter …" nếu đã test trên version Flutter mới.
-- Nhớ: README trên pub.dev chỉ đổi khi publish version mới — gom mọi sửa docs
-  vào release kế tiếp, đừng chờ "sửa sau".
+- `CHANGELOG.md`: add the new entry **at the top**, written from the user's
+  perspective (what changed, how to migrate if breaking).
+- `README.md`: update if API/parameters/limits changed; update the
+  "Verified on Flutter …" line if tested on a newer Flutter.
+- Remember: the README on pub.dev only changes when a new version is published —
+  batch every docs fix into the next release, don't leave it for "later".
 
-## 4. Kiểm tra gói
+## 4. Validate the package
 
 ```sh
 dart pub publish --dry-run
 ```
 
-Yêu cầu: **0 warnings**, archive size hợp lý (~700 KB — to bất thường là lọt
-file rác; `build/` đã bị chặn bởi `.pubignore` + `.gitignore`).
+Requirements: **0 warnings**, sane archive size (~700 KB — unusually large
+means junk files leaked in; `build/` is blocked by `.pubignore` + `.gitignore`).
 
-## 5. Đẩy code & chờ CI
+## 5. Push & wait for CI
 
 ```sh
 git add -A && git commit -m "release: vX.Y.Z"
 git push
 ```
 
-Chờ CI xanh **cả stable lẫn beta** (Actions → CI). Beta đỏ vì Flutter đổi
-internal API → sửa trước khi release, đó chính là rủi ro số một của package này.
+Wait for CI to go green on **both stable and beta** (Actions → CI). Beta going
+red because Flutter changed an internal API → fix before releasing; that is
+this package's number-one risk.
 
 ## 6. Publish
 
 ```sh
-dart pub publish        # xác nhận y — một chiều, không undo
+dart pub publish        # confirm y — one-way, no undo
 ```
 
-Lỡ publish sai: `dart pub retract <version>` (trong 7 ngày), rồi fix và publish
-bản mới cao hơn. Không bao giờ xóa được version.
+Published the wrong thing: `dart pub retract <version>` (within 7 days), then
+fix and publish a newer version. Versions can never be deleted.
 
 ## 7. Tag & GitHub Release
 
 ```sh
 git tag vX.Y.Z && git push origin vX.Y.Z
-gh release create vX.Y.Z --title "widget_snap X.Y.Z" --notes "<copy từ CHANGELOG>"
+gh release create vX.Y.Z --title "widget_snap X.Y.Z" --notes "<copy from CHANGELOG>"
 ```
 
-## 8. Sau release (5 phút)
+## 8. After release (5 minutes)
 
-- Mở https://pub.dev/packages/widget_snap: version mới hiện, README/ảnh render
-  đúng, score không tụt (tab Scores — pana chạy lại sau vài phút).
-- Ảnh README lấy từ GitHub raw theo `repository:` — đảm bảo `doc/*.png` đã push.
-- Quét issue/PR mới trên GitHub.
+- Open https://pub.dev/packages/widget_snap: new version shows, README/images
+  render correctly, score didn't drop (Scores tab — pana reruns after a few
+  minutes).
+- README images are served from GitHub raw via `repository:` — make sure
+  `doc/*.png` is pushed.
+- Sweep new issues/PRs on GitHub.
 
-## Checklist rút gọn
+## Short checklist
 
 ```
-[ ] analyze + test (VM & Chrome) xanh
-[ ] version bump đúng semver
-[ ] CHANGELOG + README cập nhật
+[ ] analyze + test (VM & Chrome) green
+[ ] version bump follows semver
+[ ] CHANGELOG + README updated
 [ ] dry-run 0 warnings
-[ ] push, CI stable+beta xanh
+[ ] push, CI stable+beta green
 [ ] dart pub publish
 [ ] tag vX.Y.Z + GitHub release
-[ ] kiểm tra trang pub.dev
+[ ] check the pub.dev page
 ```

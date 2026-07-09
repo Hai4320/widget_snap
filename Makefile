@@ -1,4 +1,4 @@
-# Targets khớp với checklist trong doc/RELEASING.md
+# Targets mirror the checklist in doc/RELEASING.md
 .PHONY: get format analyze test test-web images check
 
 get:

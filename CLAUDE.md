@@ -1,29 +1,30 @@
 # widget_snap
 
-Flutter package export widget ra PNG — render offscreen, hỗ trợ nội dung lớn
-hơn màn hình. Pure Flutter, zero dependencies, publish trên pub.dev.
+Flutter package that exports any widget to PNG — rendered offscreen, supports
+content larger than the screen. Pure Flutter, zero dependencies, published on
+pub.dev.
 
-## Lệnh
+## Commands
 
 ```sh
-make check      # format + analyze + test + test web (chạy trước khi commit)
+make check      # format + analyze + test + web test (run before committing)
 make test-web   # flutter test --platform chrome test/capture_test.dart
-make images     # regenerate hình README trong doc/ (bằng chính package)
+make images     # regenerate README images in doc/ (using the package itself)
 ```
 
-## Cấu trúc
+## Structure
 
-- `lib/src/capture.dart` — render pipeline chính (extension `toPngBytes`/`toPngFile`)
-- `lib/src/facade.dart` — API static `WidgetSnap.pngBytes` / `WidgetSnap.pngFile`
-- `lib/src/save_io.dart` / `save_web.dart` — lưu file theo platform (conditional import)
-- `tool/readme_images.dart` — generate hình README, chạy qua `flutter test`
+- `lib/src/capture.dart` — core render pipeline (extension `toPngBytes`/`toPngFile`)
+- `lib/src/facade.dart` — static API `WidgetSnap.pngBytes` / `WidgetSnap.pngFile`
+- `lib/src/save_io.dart` / `save_web.dart` — per-platform file saving (conditional import)
+- `tool/readme_images.dart` — generates README images, run via `flutter test`
 
-## Quy ước
+## Conventions
 
-- `flutter analyze` phải sạch 100% — lint là fail.
-- Sửa gì thêm test đó, đặc biệt mọi thay đổi trong `lib/src/capture.dart`.
-- API đã cam kết semver từ 1.0.0: đổi signature/hành vi của
-  `toPngBytes`/`toPngFile`/`WidgetSnap` là MAJOR. Quy trình release đầy đủ:
+- `flutter analyze` must be 100% clean — a lint is a failure.
+- Every change ships with tests, especially anything in `lib/src/capture.dart`.
+- The API is semver-committed since 1.0.0: changing the signature/behavior of
+  `toPngBytes`/`toPngFile`/`WidgetSnap` is a MAJOR bump. Full release process:
   `doc/RELEASING.md`.
-- Không bump `version:` trong pubspec khi làm feature — bump lúc release.
-- Hình README: font Roboto không có glyph `→`, đừng dùng trong text của hình.
+- Don't bump `version:` in pubspec in feature work — bump at release time.
+- README images: the Roboto font has no `→` glyph, don't use it in image text.
