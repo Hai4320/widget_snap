@@ -6,10 +6,11 @@ import 'package:flutter/rendering.dart';
 
 /// Core capture API: `myWidget.toPngBytes(context)`.
 extension WidgetSnapPng on Widget {
-  /// Renders this widget in an offscreen tree at [width] logical pixels wide
-  /// (defaults to the current view's width; height grows to fit the content)
-  /// and returns the encoded PNG bytes. Content with async images? Pass a
-  /// [delay] so they resolve before capture.
+  /// Renders this widget in an offscreen tree and returns the encoded PNG
+  /// bytes. Pin [width], [height], or both; the unpinned axis grows to fit the
+  /// content. With neither set, defaults to the current view's width (height
+  /// grows) — use [height] for naturally-wide content (timelines, charts).
+  /// Content with async images? Pass a [delay] so they resolve before capture.
   ///
   /// Pure capture, no IO — the host app owns what happens to the bytes.
   /// `toPngFile` is the ready-made temp-file wrapper.
@@ -22,17 +23,29 @@ extension WidgetSnapPng on Widget {
   Future<Uint8List> toPngBytes(
     BuildContext context, {
     double? width,
+    double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
   }) async {
-    // Default to the current view's width so the export matches what the user
-    // sees; pass an explicit width for fixed-size output (e.g. 1080).
-    width ??= MediaQuery.sizeOf(context).width;
-    // ponytail: clamp by width only — GPU texture cap (~4096px on low-end
-    // devices) would clip or OOM very wide canvases (deep logic trees). Very
-    // *tall* documents can still exceed the cap; revisit with tiled capture if
-    // users hit it.
-    final ratio = pixelRatio.clamp(1.0, 4096 / width).toDouble();
+    // Pin the given axis; the other grows to fit. Default to the current
+    // view's width (matches what the user sees) only when neither axis is set.
+    if (width == null && height == null) {
+      width = MediaQuery.sizeOf(context).width;
+    }
+    // ponytail: clamp by the pinned axis (the larger, if both) — the GPU
+    // texture cap (~4096px on low-end devices) would clip or OOM huge canvases.
+    // The *growing* axis can still exceed the cap; revisit with tiled capture
+    // if users hit it.
+    final cap = [
+      width,
+      height,
+    ].whereType<double>().reduce((a, b) => a > b ? a : b);
+    // A pinned axis larger than the cap makes 4096/cap < 1.0, which would make
+    // clamp's upper bound < lower and throw. Floor it at 1.0: we never
+    // downscale below native, so the pinned axis just rides over the cap (same
+    // caveat as the growing axis).
+    final maxRatio = 4096 / cap;
+    final ratio = pixelRatio.clamp(1.0, maxRatio < 1.0 ? 1.0 : maxRatio).toDouble();
     final flutterView = View.of(context);
 
     final pipelineOwner = PipelineOwner();
@@ -50,14 +63,19 @@ extension WidgetSnapPng on Widget {
     // this subtree).
     final repaintBoundary = RenderRepaintBoundary();
 
-    // Fixed width, unbounded height → RenderView sizes the child to its
-    // content.
-    final widthConstraint = BoxConstraints(minWidth: width, maxWidth: width);
+    // Pin each given axis (min == max); leave the other unbounded so the
+    // RenderView sizes the child to its content along it.
+    final constraints = BoxConstraints(
+      minWidth: width ?? 0,
+      maxWidth: width ?? double.infinity,
+      minHeight: height ?? 0,
+      maxHeight: height ?? double.infinity,
+    );
     final renderView = RenderView(
       view: flutterView,
       configuration: ViewConfiguration(
-        logicalConstraints: widthConstraint,
-        physicalConstraints: widthConstraint * ratio,
+        logicalConstraints: constraints,
+        physicalConstraints: constraints * ratio,
         devicePixelRatio: ratio,
       ),
       child: repaintBoundary,

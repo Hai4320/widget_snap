@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Add optional `height` param to `toPngBytes` / `toPngFile` / `WidgetSnap.*`.
+  Pin the width **or** the height (or both); the unpinned axis grows to fit.
+  Pinning height captures naturally-wide content (timelines, charts) without
+  distortion. The `pixelRatio` GPU-cap clamp now follows the pinned axis.
+
 ## 1.0.1
 
 - Docs: badges and CI (stable + beta, weekly) — no code changes.

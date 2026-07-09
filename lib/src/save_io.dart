@@ -17,12 +17,14 @@ extension WidgetSnapPngFile on Widget {
     BuildContext context, {
     required String filename,
     double? width,
+    double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
   }) async {
     final bytes = await toPngBytes(
       context,
       width: width,
+      height: height,
       pixelRatio: pixelRatio,
       delay: delay,
     );

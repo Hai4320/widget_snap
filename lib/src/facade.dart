@@ -15,12 +15,14 @@ abstract final class WidgetSnap {
     Widget content,
     BuildContext context, {
     double? width,
+    double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
   }) =>
       content.toPngBytes(
         context,
         width: width,
+        height: height,
         pixelRatio: pixelRatio,
         delay: delay,
       );
@@ -31,6 +33,7 @@ abstract final class WidgetSnap {
     BuildContext context, {
     required String filename,
     double? width,
+    double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
   }) =>
@@ -38,6 +41,7 @@ abstract final class WidgetSnap {
         context,
         filename: filename,
         width: width,
+        height: height,
         pixelRatio: pixelRatio,
         delay: delay,
       );
