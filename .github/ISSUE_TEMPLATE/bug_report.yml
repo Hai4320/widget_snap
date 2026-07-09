@@ -1,0 +1,34 @@
+name: Bug report
+description: Report a problem with widget_snap
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction
+      description: Minimal code snippet or steps that trigger the bug.
+      render: dart
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: widget_snap version
+      placeholder: 1.0.1
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Output of `flutter doctor -v` (or Flutter/Dart version + platform).
+      render: shell
+    validations:
+      required: true
