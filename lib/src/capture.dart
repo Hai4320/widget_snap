@@ -18,6 +18,12 @@ extension WidgetSnapPng on Widget {
   /// in-app rather than on black). Pass `Colors.transparent` for a PNG with an
   /// alpha channel, or any color to tint the canvas.
   ///
+  /// Throws a [StateError] when rasterizing or encoding the capture fails —
+  /// in practice a capture too large for the renderer's memory (on the web
+  /// the ceiling is roughly 180 million total pixels; native platforms
+  /// handle far more). Capture a smaller [width]/[height] or lower
+  /// [pixelRatio].
+  ///
   /// Pure capture, no IO — the host app owns what happens to the bytes.
   /// `toPngFile` is the ready-made temp-file wrapper.
   ///
@@ -156,12 +162,37 @@ extension WidgetSnapPng on Widget {
           ..flushPaint();
       }
 
-      final image = await repaintBoundary.toImage(pixelRatio: ratio);
+      // Oversized captures die here, not in layout: the web renderer throws
+      // 'Unable to convert read pixels' or a wasm RuntimeError above roughly
+      // 180M total pixels (measured: 13312^2 ok, 14336^2 not — see
+      // test/stress_probe.dart), and toByteData's documented failure mode is
+      // returning null. Wrap them all in one actionable error; the original
+      // exception rides along in the message.
+      final physical = repaintBoundary.size * ratio;
       try {
-        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-        return bytes!.buffer.asUint8List();
-      } finally {
-        image.dispose();
+        final image = await repaintBoundary.toImage(pixelRatio: ratio);
+        try {
+          final bytes = await image.toByteData(
+            format: ui.ImageByteFormat.png,
+          );
+          if (bytes == null) {
+            throw StateError('PNG encoding returned no data');
+          }
+          return bytes.buffer.asUint8List();
+        } finally {
+          image.dispose();
+        }
+      } on Object catch (e, s) {
+        Error.throwWithStackTrace(
+          StateError(
+            'Capturing at ${physical.width.round()}x'
+            '${physical.height.round()} px failed ($e). The capture is '
+            'likely too large for this platform — the web renderer runs out '
+            'of memory above roughly 180 million total pixels. Capture a '
+            'smaller width/height or lower pixelRatio.',
+          ),
+          s,
+        );
       }
     } finally {
       // Detach the content (adapter with no child) and unmount the subtree so

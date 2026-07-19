@@ -144,6 +144,13 @@ gallery, upload, …).
   consequence: don't pass content holding a `GlobalKey` that is
   *simultaneously mounted* in the live app tree (duplicate-key error in
   debug) — build a fresh copy of the widget for export instead.
+- **Very large captures throw.** When rasterizing or encoding the capture
+  fails, `toPngBytes` throws a `StateError` naming the pixel size and the fix
+  (capture smaller, or lower `pixelRatio`) — never a silent blank image.
+  Measured ceiling on the web (CanvasKit): total area of roughly 180 million
+  pixels (13312×13312 works, 14336×14336 does not); a skinny 400×131072
+  strip is fine. Native platforms handle far more. Probe your own setup with
+  `test/stress_probe.dart`.
 - **Async images need `delay`.** `NetworkImage` / asset decodes paint blank on
   the first frame; pass a `delay` so they resolve before rasterizing.
 - **Files are temporary.** `toPngFile` writes under the system temp dir,
@@ -157,5 +164,5 @@ gallery, upload, …).
 ## Roadmap
 
 - JPEG output (quality knob) for photo-heavy content.
-- Tiled capture for documents that exceed the GPU texture cap along the growing axis.
+- Tiled capture for documents that exceed the GPU texture cap along the growing axis, or the web renderer's ~180M-pixel memory ceiling.
 - PDF export (pagination, headers/footers, bookmarks) as a separate layer.

@@ -2,6 +2,11 @@
 
 ## 1.2.0
 
+- Fail loud on oversized captures: when rasterizing or encoding fails (e.g.
+  the web renderer runs out of memory above roughly 180 million total
+  pixels), `toPngBytes` now throws a `StateError` naming the capture size and
+  the fix (smaller `width`/`height` or lower `pixelRatio`) instead of an
+  opaque engine error.
 - Add optional `backgroundColor` param to `toPngBytes` / `toPngFile` /
   `WidgetSnap.*`. Fills behind the content; defaults to opaque white (existing
   call sites are unchanged). Pass `Colors.transparent` for a PNG with an alpha
