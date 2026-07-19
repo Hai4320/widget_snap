@@ -13,6 +13,11 @@ extension WidgetSnapPng on Widget {
   /// grows) — use [height] for naturally-wide content (timelines, charts).
   /// Content with async images? Pass a [delay] so they resolve before capture.
   ///
+  /// [backgroundColor] fills behind the content (defaults to opaque white, so
+  /// widgets without their own background — bare `Text`, `Row` — read like
+  /// in-app rather than on black). Pass `Colors.transparent` for a PNG with an
+  /// alpha channel, or any color to tint the canvas.
+  ///
   /// Pure capture, no IO — the host app owns what happens to the bytes.
   /// `toPngFile` is the ready-made temp-file wrapper.
   ///
@@ -27,6 +32,7 @@ extension WidgetSnapPng on Widget {
     double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
+    Color backgroundColor = Colors.white,
   }) async {
     // Pin the given axis; the other grows to fit. Default to the current
     // view's width (matches what the user sees) only when neither axis is set.
@@ -99,9 +105,9 @@ extension WidgetSnapPng on Widget {
     }
 
     // The offscreen tree has no MaterialApp above it: provide media/direction
-    // and a white Material so Ink, InkWell and Text render like in-app. The
-    // widget tree mounts directly under the boundary — it sizes to the
-    // content exactly.
+    // and a Material (default white) so Ink, InkWell and Text render like
+    // in-app. The widget tree mounts directly under the boundary — it sizes to
+    // the content exactly.
     final rootElement = collectingBuildErrors(
       () => RenderObjectToWidgetAdapter<RenderBox>(
         container: repaintBoundary,
@@ -109,7 +115,7 @@ extension WidgetSnapPng on Widget {
           data: MediaQuery.of(context),
           child: Directionality(
             textDirection: Directionality.of(context),
-            child: Material(color: Colors.white, child: this),
+            child: Material(color: backgroundColor, child: this),
           ),
         ),
       ).attachToRenderTree(buildOwner),

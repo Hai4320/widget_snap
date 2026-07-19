@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'package:widget_snap/src/capture.dart';
 
@@ -16,6 +16,7 @@ extension WidgetSnapPngFile on Widget {
     double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
+    Color backgroundColor = Colors.white,
   }) async {
     throw UnsupportedError(
       'toPngFile is not supported on the web: there is no writable '

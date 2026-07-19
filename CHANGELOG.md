@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.2.0
+
+- Add optional `backgroundColor` param to `toPngBytes` / `toPngFile` /
+  `WidgetSnap.*`. Fills behind the content; defaults to opaque white (existing
+  call sites are unchanged). Pass `Colors.transparent` for a PNG with an alpha
+  channel, or any color to tint the canvas.
+
 ## 1.1.0
 
 - Add optional `height` param to `toPngBytes` / `toPngFile` / `WidgetSnap.*`.
