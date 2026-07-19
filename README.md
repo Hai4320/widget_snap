@@ -95,9 +95,9 @@ final path  = await WidgetSnap.pngFile(myWidget, context, filename: 'export.png'
 | `context` | ✓ | Source of inherited theme, `MediaQuery`, and text direction. |
 | `width` | — | Target width in logical pixels. Default = current view width (when `height` is also unset); the unpinned axis grows to fit the content. |
 | `height` | — | Target height in logical pixels. Pin this for naturally-wide content (timelines, charts) and let the width grow. |
-| `filename` | file variant only | Output filename (written under the system temp dir). |
-| `pixelRatio` | — | Raster scale, default `2.5`. Clamped so the pinned axis × `pixelRatio` ≤ 4096. |
-| `delay` | — | Wait before capture so async images (network/asset) resolve; default zero. |
+| `filename` | file variant only | Bare file name, no path separators (written under the system temp dir). |
+| `pixelRatio` | — | Raster scale, default `2.5`. Clamped (≥ 1.0) so no output axis exceeds ~4096px. |
+| `delay` | — | Wait before capture so async images (network/asset) resolve; default zero. Prefer `precacheImage` (see Notes). |
 | `backgroundColor` | — | Fill behind the content, default opaque white. Pass `Colors.transparent` for a PNG with an alpha channel, or any color to tint the canvas. |
 
 `toPngBytes` returns the PNG `Uint8List`; `toPngFile` returns the written
@@ -128,16 +128,25 @@ gallery, upload, …).
 - **No `MaterialApp` needed.** The offscreen tree wraps your widget in a white
   `Material` + `Directionality` + `MediaQuery`, so `Ink`, `InkWell`, and
   `Text` render as in-app.
-- **The pinned axis is clamped, the growing one is not.** `pixelRatio` is
-  reduced so the rasterized *pinned* axis stays under the ~4096px GPU texture
-  cap on low-end devices. A document that grows large along the **unpinned**
-  axis can still exceed the cap — if you hit clipping or OOM, lower
-  `pixelRatio`.
+- **`pixelRatio` is clamped to the GPU texture cap.** The raster scale is
+  reduced (never below 1.0) so no output axis exceeds ~4096px — the texture
+  cap on low-end devices. The pinned axis is clamped up front, the growing
+  axis after layout once the content's size is known. Content larger than
+  4096 *logical* pixels still rides over the cap; if you hit clipping or
+  OOM there, capture a smaller width/height.
+- **A fresh tree is captured, not your live one.** The widget is rebuilt
+  offscreen, so runtime state of a live counterpart — a checked checkbox,
+  typed text, a scroll offset — does not carry over. Build the export copy
+  from your app's data.
 - **No `Overlay` in the offscreen tree.** Widgets that require an `Overlay` /
   `Navigator` ancestor (`Tooltip`, dropdowns, anything that pops routes) throw
   during the offscreen build. The export fails loudly with that error instead
   of producing a blank image. Strip such widgets from the export copy of your
   content.
+- **Layout errors fail loud too.** Content that fails *layout* — e.g. a
+  `ListView` growing along the unpinned axis ("unbounded height") — rethrows
+  the original framework error instead of exporting garbage. Give
+  scrollables a bounded main axis: pin that axis, or set `shrinkWrap: true`.
 - **Don't reuse live `GlobalKey`s.** The offscreen tree mounts on the
   framework's `BuildOwner` (so Flutter-internal `GlobalKey`s — `Ink`, form
   fields — resolve correctly) and is unmounted right after capture. One
@@ -151,11 +160,15 @@ gallery, upload, …).
   pixels (13312×13312 works, 14336×14336 does not); a skinny 400×131072
   strip is fine. Native platforms handle far more. Probe your own setup with
   `test/stress_probe.dart`.
-- **Async images need `delay`.** `NetworkImage` / asset decodes paint blank on
-  the first frame; pass a `delay` so they resolve before rasterizing.
+- **Async images: `precacheImage` first, or pass `delay`.** `NetworkImage` /
+  asset decodes paint blank on the first frame. The deterministic fix is
+  `await precacheImage(provider, context)` for each image before capturing —
+  the offscreen tree then reads them straight from the image cache. `delay`
+  remains as a time-based fallback.
 - **Files are temporary.** `toPngFile` writes under the system temp dir,
   which the OS may clean at any time (iOS routinely does). Move the file if
-  you need it to persist.
+  you need it to persist. `filename` must be a bare name — path separators
+  throw an `ArgumentError`.
 - **Flutter-version sensitive.** Uses the internal render-pipeline API
   (`ViewConfiguration.logicalConstraints`, `RenderView(view:)`). Verified on
   Flutter 3.35 and 3.41 (tests run on the VM and in Chrome). If a Flutter

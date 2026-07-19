@@ -2,6 +2,20 @@
 
 ## 1.2.0
 
+- Fail loud on layout errors: content that fails layout in the offscreen
+  tree (e.g. a `ListView` growing along the unpinned axis) now rethrows the
+  original framework error ("unbounded height") instead of a cryptic
+  follow-on assert or a garbage export.
+- The `pixelRatio` texture-cap clamp now covers the growing axis too: after
+  layout, the raster scale is reduced so no output axis exceeds ~4096px
+  (never below 1.0). Very tall/wide captures that previously risked clipping
+  or OOM on low-end devices now come out whole, at a proportionally lower
+  raster scale.
+- `toPngFile` now throws an `ArgumentError` when `filename` contains a path
+  separator, instead of silently writing outside the system temp dir.
+- Docs: deterministic `precacheImage` recipe for async images (instead of
+  guessing a `delay`); note that a fresh tree is captured, so live runtime
+  state (checked boxes, typed text, scroll position) doesn't carry over.
 - Fail loud on oversized captures: when rasterizing or encoding fails (e.g.
   the web renderer runs out of memory above roughly 180 million total
   pixels), `toPngBytes` now throws a `StateError` naming the capture size and

@@ -206,4 +206,80 @@ void main() {
     final center = ((image.height ~/ 2) * w + w ~/ 2) * 4;
     expect(rgba[center + 3], 0x00, reason: 'background must be transparent');
   });
+
+  testWidgets('layout error fails loud with the original message', (
+    tester,
+  ) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+
+    // A ListView along the unbounded growing axis fails *layout*, not build.
+    // Without collecting layout errors the caller gets a follow-on
+    // "RenderBox was not laid out" assert instead of the actionable one.
+    final result = await tester.runAsync(
+      () async {
+        try {
+          await ListView(
+            children: const [SizedBox(height: 50)],
+          ).toPngBytes(ctx, width: 100);
+          return null;
+        } on Object catch (e) {
+          // Intentional catch-all: the test inspects whatever was thrown.
+          return e;
+        }
+      },
+    );
+    expect(result, isNotNull, reason: 'export must throw, not return bytes');
+    expect(
+      '$result',
+      contains('unbounded height'),
+      reason: 'the original layout error must surface, not a follow-on',
+    );
+  });
+
+  testWidgets('growing axis re-clamps pixelRatio under the texture cap', (
+    tester,
+  ) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+
+    // 100x4000 logical at the default 2.5 ratio would rasterize 10000px
+    // tall; the post-layout clamp must bring it down to <=4096 without ever
+    // dropping below native (1.0) resolution.
+    final bytes = await tester.runAsync(
+      () => Container(
+        width: 100,
+        height: 4000,
+        color: const Color(0xFFFF0000),
+      ).toPngBytes(ctx, width: 100),
+    );
+    final image = await tester.runAsync(() async {
+      final codec = await ui.instantiateImageCodec(bytes!);
+      return (await codec.getNextFrame()).image;
+    });
+    expect(image!.height, lessThanOrEqualTo(4096));
+    expect(
+      image.height,
+      greaterThanOrEqualTo(4000),
+      reason: 'never downscaled below native resolution',
+    );
+  });
 }

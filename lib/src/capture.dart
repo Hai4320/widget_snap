@@ -11,18 +11,29 @@ extension WidgetSnapPng on Widget {
   /// bytes. Pin [width], [height], or both; the unpinned axis grows to fit the
   /// content. With neither set, defaults to the current view's width (height
   /// grows) — use [height] for naturally-wide content (timelines, charts).
-  /// Content with async images? Pass a [delay] so they resolve before capture.
+  /// Content with async images? `await precacheImage(...)` each one first so
+  /// the offscreen tree reads them from the image cache, or pass a [delay]
+  /// as a time-based fallback.
   ///
   /// [backgroundColor] fills behind the content (defaults to opaque white, so
   /// widgets without their own background — bare `Text`, `Row` — read like
   /// in-app rather than on black). Pass `Colors.transparent` for a PNG with an
   /// alpha channel, or any color to tint the canvas.
   ///
+  /// The tree is built fresh from this widget: runtime state of a live
+  /// counterpart (a checked checkbox, typed text, a scroll offset) does not
+  /// carry over — build the export copy from your app's data.
+  ///
   /// Throws a [StateError] when rasterizing or encoding the capture fails —
   /// in practice a capture too large for the renderer's memory (on the web
   /// the ceiling is roughly 180 million total pixels; native platforms
   /// handle far more). Capture a smaller [width]/[height] or lower
-  /// [pixelRatio].
+  /// [pixelRatio]. Errors raised while the offscreen tree builds or lays
+  /// out — a `Tooltip` without an `Overlay`, a `ListView` growing along an
+  /// unpinned axis ("unbounded height") — are rethrown as-is instead of
+  /// exporting a blank or garbage image. [pixelRatio] is clamped (never
+  /// below 1.0) so no output axis exceeds the ~4096px GPU texture cap: the
+  /// pinned axis up front, the growing axis after layout.
   ///
   /// Pure capture, no IO — the host app owns what happens to the bytes.
   /// `toPngFile` is the ready-made temp-file wrapper.
@@ -44,10 +55,11 @@ extension WidgetSnapPng on Widget {
     // view's width (matches what the user sees) only when neither axis is set.
     final pinnedWidth =
         width ?? (height == null ? MediaQuery.sizeOf(context).width : null);
-    // ponytail: clamp by the pinned axis (the larger, if both) — the GPU
-    // texture cap (~4096px on low-end devices) would clip or OOM huge canvases.
-    // The *growing* axis can still exceed the cap; revisit with tiled capture
-    // if users hit it.
+    // ponytail: pre-layout clamp by the pinned axis (the larger, if both) —
+    // the GPU texture cap (~4096px on low-end devices) would clip or OOM huge
+    // canvases. The growing axis gets the same clamp after layout
+    // (rasterRatio below); content over 4096 *logical* px still rides over —
+    // tiled capture if users hit it.
     final cap = [
       pinnedWidth,
       height,
@@ -110,6 +122,29 @@ extension WidgetSnapPng on Widget {
       }
     }
 
+    void throwFirstBuildError() {
+      if (buildErrors.isNotEmpty) {
+        Error.throwWithStackTrace(
+          buildErrors.first.exception,
+          buildErrors.first.stack ?? StackTrace.current,
+        );
+      }
+    }
+
+    // Layout failures (an unbounded ListView, say) are *reported* to
+    // FlutterError.onError, not thrown — uncollected, the caller would get a
+    // follow-on "RenderBox was not laid out" assert (or garbage in release)
+    // instead of the actionable original. Paint stays uncollected on purpose:
+    // RenderFlex overflow *warnings* report during paint and must stay
+    // warnings.
+    void flushFrame() {
+      collectingBuildErrors(pipelineOwner.flushLayout);
+      throwFirstBuildError();
+      pipelineOwner
+        ..flushCompositingBits()
+        ..flushPaint();
+    }
+
     // The offscreen tree has no MaterialApp above it: provide media/direction
     // and a Material (default white) so Ink, InkWell and Text render like
     // in-app. The widget tree mounts directly under the boundary — it sizes to
@@ -128,17 +163,9 @@ extension WidgetSnapPng on Widget {
     );
 
     try {
-      if (buildErrors.isNotEmpty) {
-        Error.throwWithStackTrace(
-          buildErrors.first.exception,
-          buildErrors.first.stack ?? StackTrace.current,
-        );
-      }
+      throwFirstBuildError();
       buildOwner.finalizeTree();
-      pipelineOwner
-        ..flushLayout()
-        ..flushCompositingBits()
-        ..flushPaint();
+      flushFrame();
 
       // Async content (NetworkImage, asset decode) paints blank on the first
       // frame. A non-zero [delay] gives it time to resolve, then rebuilds and
@@ -150,17 +177,18 @@ extension WidgetSnapPng on Widget {
             ..buildScope(rootElement)
             ..finalizeTree();
         });
-        if (buildErrors.isNotEmpty) {
-          Error.throwWithStackTrace(
-            buildErrors.first.exception,
-            buildErrors.first.stack ?? StackTrace.current,
-          );
-        }
-        pipelineOwner
-          ..flushLayout()
-          ..flushCompositingBits()
-          ..flushPaint();
+        throwFirstBuildError();
+        flushFrame();
       }
+
+      // The growing axis is only known after layout: re-clamp the raster
+      // scale so it, too, stays under the ~4096px texture cap (floor 1.0 —
+      // content over 4096 logical px still rides over).
+      final side = math.max(
+        repaintBoundary.size.width,
+        repaintBoundary.size.height,
+      );
+      final rasterRatio = math.min(ratio, math.max(1, 4096 / side)).toDouble();
 
       // Oversized captures die here, not in layout: the web renderer throws
       // 'Unable to convert read pixels' or a wasm RuntimeError above roughly
@@ -168,9 +196,9 @@ extension WidgetSnapPng on Widget {
       // test/stress_probe.dart), and toByteData's documented failure mode is
       // returning null. Wrap them all in one actionable error; the original
       // exception rides along in the message.
-      final physical = repaintBoundary.size * ratio;
+      final physical = repaintBoundary.size * rasterRatio;
       try {
-        final image = await repaintBoundary.toImage(pixelRatio: ratio);
+        final image = await repaintBoundary.toImage(pixelRatio: rasterRatio);
         try {
           final bytes = await image.toByteData(
             format: ui.ImageByteFormat.png,
