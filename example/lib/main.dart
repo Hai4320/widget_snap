@@ -34,10 +34,12 @@ class _DemoScreenState extends State<DemoScreen> {
         // Pin one axis; the other grows to fit the content.
         //   width + height together → fixed box (content clips if larger)
         //   neither      → defaults to the current view's width
-        // pixelRatio (default 2.5) is the raster scale, clamped so the pinned
-        // axis stays under the ~4096px GPU cap. delay: lets async images
-        // (network/asset) resolve before capture. backgroundColor (default
-        // white) fills behind bare content — use Colors.transparent for alpha.
+        // pixelRatio (default 2.5) is the raster scale, clamped (never below
+        // 1.0) so no output axis exceeds the ~4096px GPU cap. delay: lets
+        // async images (network/asset) resolve before capture — prefer
+        // `await precacheImage(...)` for a deterministic wait.
+        // backgroundColor (default white) fills behind bare content — use
+        // Colors.transparent for alpha.
 
         // Tall + narrow → pin the width, height auto-fits.
         final b = await _content().toPngBytes(context, width: 320);
