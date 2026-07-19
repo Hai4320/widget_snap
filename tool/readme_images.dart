@@ -58,7 +58,14 @@ void main() {
 
     Directory('doc').createSync();
     await tester.runAsync(() async {
-      final banner = await _banner().toPngBytes(ctx, width: 720, pixelRatio: 2);
+      // Transparent background + rounded corners: exercises the
+      // backgroundColor param and looks right on light & dark pub.dev.
+      final banner = await _banner().toPngBytes(
+        ctx,
+        width: 720,
+        pixelRatio: 2,
+        backgroundColor: Colors.transparent,
+      );
       await File('doc/banner.png').writeAsBytes(banner);
       final tall = await _tallReport().toPngBytes(
         ctx,
@@ -94,6 +101,7 @@ Widget _banner() => Container(
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     ),
+    borderRadius: BorderRadius.circular(20),
   ),
   child: Row(
     children: [
@@ -144,7 +152,8 @@ Widget _banner() => Container(
               runSpacing: 8,
               children: [
                 _pill('zero deps'),
-                _pill('pure Flutter pipeline'),
+                _pill('pin width or height'),
+                _pill('transparent PNG'),
                 _pill('Android · iOS · Web · Desktop'),
               ],
             ),
@@ -276,9 +285,7 @@ Widget _tallReport() {
   ];
   const entries = [
     ('Morning run — riverside loop', 'Mon · 06:12 · easy pace', '48 min'),
-    ('Strength: push day', 'Mon · 18:30 · gym', '55 min'),
     ('Interval sprints 8 × 400 m', 'Wed · 06:05 · track', '42 min'),
-    ('Yoga & mobility', 'Thu · 07:00 · home', '30 min'),
     ('Long ride — coast road', 'Sat · 08:20 · 61 km', '2 h 10'),
     ('Recovery swim', 'Sun · 09:15 · pool', '35 min'),
   ];
@@ -401,7 +408,7 @@ Widget _tallReport() {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  'March 2026 · 24 sessions',
+                  'March 2026 · 8 sessions',
                   style: TextStyle(color: _muted, fontSize: 12),
                 ),
               ],
@@ -411,14 +418,14 @@ Widget _tallReport() {
         const SizedBox(height: 18),
         Row(
           children: [
-            stat('24', 'sessions'),
+            stat('8', 'sessions'),
             const SizedBox(width: 10),
-            stat('18 h 40 m', 'total time'),
+            stat('8 h 30 m', 'total time'),
             const SizedBox(width: 10),
-            stat('312 km', 'distance'),
+            stat('138 km', 'distance'),
           ],
         ),
-        for (var n = 1; n <= 4; n++) week(n),
+        for (var n = 1; n <= 2; n++) week(n),
         const SizedBox(height: 16),
         Container(height: 1, color: _line),
         const SizedBox(height: 12),
