@@ -1,7 +1,7 @@
 import 'dart:math' as math;
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
@@ -183,12 +183,17 @@ extension WidgetSnapPng on Widget {
           image.dispose();
         }
       } on Object catch (e, s) {
+        // The ~180M px figure is measured on web/CanvasKit only — don't
+        // cite it on native platforms, whose ceilings are much higher.
+        const webHint = kIsWeb
+            ? ' — the web renderer runs out of memory above roughly '
+                  '180 million total pixels'
+            : '';
         Error.throwWithStackTrace(
           StateError(
             'Capturing at ${physical.width.round()}x'
             '${physical.height.round()} px failed ($e). The capture is '
-            'likely too large for this platform — the web renderer runs out '
-            'of memory above roughly 180 million total pixels. Capture a '
+            'likely too large for this platform$webHint. Capture a '
             'smaller width/height or lower pixelRatio.',
           ),
           s,
