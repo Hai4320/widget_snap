@@ -136,4 +136,74 @@ void main() {
     );
     expect(result, isNotNull, reason: 'export must throw, not return bytes');
   });
+
+  testWidgets('backgroundColor tints the canvas behind bare content', (
+    tester,
+  ) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+
+    // Empty content: the whole canvas is the backgroundColor fill.
+    final bytes = await tester.runAsync(
+      () => const SizedBox(width: 40, height: 20).toPngBytes(
+        ctx,
+        width: 40,
+        backgroundColor: const Color(0xFF123456),
+      ),
+    );
+    final image = await tester.runAsync(() async {
+      final codec = await ui.instantiateImageCodec(bytes!);
+      return (await codec.getNextFrame()).image;
+    });
+    final data = await tester.runAsync(() => image!.toByteData());
+    final rgba = data!.buffer.asUint8List();
+    final w = image!.width;
+    final center = ((image.height ~/ 2) * w + w ~/ 2) * 4;
+    expect(rgba[center], 0x12, reason: 'red channel');
+    expect(rgba[center + 1], 0x34, reason: 'green channel');
+    expect(rgba[center + 2], 0x56, reason: 'blue channel');
+    expect(rgba[center + 3], 0xFF, reason: 'opaque');
+  });
+
+  testWidgets('Colors.transparent yields an alpha channel, not black', (
+    tester,
+  ) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+
+    final bytes = await tester.runAsync(
+      () => const SizedBox(width: 40, height: 20).toPngBytes(
+        ctx,
+        width: 40,
+        backgroundColor: Colors.transparent,
+      ),
+    );
+    final image = await tester.runAsync(() async {
+      final codec = await ui.instantiateImageCodec(bytes!);
+      return (await codec.getNextFrame()).image;
+    });
+    final data = await tester.runAsync(() => image!.toByteData());
+    final rgba = data!.buffer.asUint8List();
+    final w = image!.width;
+    final center = ((image.height ~/ 2) * w + w ~/ 2) * 4;
+    expect(rgba[center + 3], 0x00, reason: 'background must be transparent');
+  });
 }

@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'package:widget_snap/src/capture.dart';
 
@@ -13,6 +13,10 @@ extension WidgetSnapPngFile on Widget {
   ///
   /// Not supported on the web — throws [UnsupportedError] there. Use
   /// `toPngBytes` and trigger a browser download instead.
+  ///
+  /// [backgroundColor] fills behind the content (defaults to opaque white);
+  /// pass `Colors.transparent` for a PNG with an alpha channel. See
+  /// [WidgetSnapPng.toPngBytes] for the full parameter reference.
   Future<String> toPngFile(
     BuildContext context, {
     required String filename,
@@ -20,6 +24,7 @@ extension WidgetSnapPngFile on Widget {
     double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
+    Color backgroundColor = Colors.white,
   }) async {
     final bytes = await toPngBytes(
       context,
@@ -27,6 +32,7 @@ extension WidgetSnapPngFile on Widget {
       height: height,
       pixelRatio: pixelRatio,
       delay: delay,
+      backgroundColor: backgroundColor,
     );
     final file = File('${Directory.systemTemp.path}/$filename');
     await file.writeAsBytes(bytes, flush: true);

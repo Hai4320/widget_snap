@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import 'package:widget_snap/src/capture.dart';
 import 'package:widget_snap/src/save.dart';
@@ -18,12 +18,14 @@ abstract final class WidgetSnap {
     double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
+    Color backgroundColor = Colors.white,
   }) => content.toPngBytes(
     context,
     width: width,
     height: height,
     pixelRatio: pixelRatio,
     delay: delay,
+    backgroundColor: backgroundColor,
   );
 
   /// See [WidgetSnapPngFile.toPngFile]. Not supported on the web.
@@ -35,6 +37,7 @@ abstract final class WidgetSnap {
     double? height,
     double pixelRatio = 2.5,
     Duration delay = Duration.zero,
+    Color backgroundColor = Colors.white,
   }) => content.toPngFile(
     context,
     filename: filename,
@@ -42,5 +45,6 @@ abstract final class WidgetSnap {
     height: height,
     pixelRatio: pixelRatio,
     delay: delay,
+    backgroundColor: backgroundColor,
   );
 }

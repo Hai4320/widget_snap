@@ -98,6 +98,7 @@ final path  = await WidgetSnap.pngFile(myWidget, context, filename: 'export.png'
 | `filename` | file variant only | Output filename (written under the system temp dir). |
 | `pixelRatio` | — | Raster scale, default `2.5`. Clamped so the pinned axis × `pixelRatio` ≤ 4096. |
 | `delay` | — | Wait before capture so async images (network/asset) resolve; default zero. |
+| `backgroundColor` | — | Fill behind the content, default opaque white. Pass `Colors.transparent` for a PNG with an alpha channel, or any color to tint the canvas. |
 
 `toPngBytes` returns the PNG `Uint8List`; `toPngFile` returns the written
 file's path.
@@ -156,6 +157,5 @@ gallery, upload, …).
 ## Roadmap
 
 - JPEG output (quality knob) for photo-heavy content.
-- `backgroundColor` / `theme:` overrides for the offscreen tree.
 - Tiled capture for documents that exceed the GPU texture cap along the growing axis.
 - PDF export (pagination, headers/footers, bookmarks) as a separate layer.

@@ -23,6 +23,7 @@ class DemoScreen extends StatefulWidget {
 class _DemoScreenState extends State<DemoScreen> {
   Uint8List? _bytes; // width-pinned: tall, narrow content
   Uint8List? _wideBytes; // height-pinned: wide, short content
+  Uint8List? _transparentBytes; // transparent backgroundColor → alpha channel
   Object? _error;
 
   @override
@@ -35,17 +36,32 @@ class _DemoScreenState extends State<DemoScreen> {
         //   neither      → defaults to the current view's width
         // pixelRatio (default 2.5) is the raster scale, clamped so the pinned
         // axis stays under the ~4096px GPU cap. delay: lets async images
-        // (network/asset) resolve before capture.
+        // (network/asset) resolve before capture. backgroundColor (default
+        // white) fills behind bare content — use Colors.transparent for alpha.
 
         // Tall + narrow → pin the width, height auto-fits.
         final b = await _content().toPngBytes(context, width: 320);
         if (!mounted) return;
         // Wide + short (a chart) → pin the height, width auto-fits.
-        final w = await _wideContent().toPngBytes(context, height: 140);
+        // Tint the canvas so the bare bars read against a card, not white.
+        final w = await _wideContent().toPngBytes(
+          context,
+          height: 140,
+          backgroundColor: const Color(0xFFF2F4FF),
+        );
+        if (!mounted) return;
+        // Transparent canvas → PNG with an alpha channel, so whatever it's
+        // composited over shows through (proven below by the orange backdrop).
+        final t = await _content().toPngBytes(
+          context,
+          width: 320,
+          backgroundColor: Colors.transparent,
+        );
         if (!mounted) return;
         setState(() {
           _bytes = b;
           _wideBytes = w;
+          _transparentBytes = t;
         });
       } catch (e) {
         if (mounted) setState(() => _error = e);
@@ -125,6 +141,15 @@ class _DemoScreenState extends State<DemoScreen> {
                 color: const Color(0xFFEEEEEE),
                 child: Image.memory(_wideBytes!, height: 140),
               ),
+            ),
+          const Divider(height: 32),
+          const Text('CAPTURED (backgroundColor: transparent):'),
+          if (_transparentBytes != null)
+            // Orange backdrop shows through the transparent PNG's alpha.
+            Container(
+              color: const Color(0xFFFF8A34),
+              padding: const EdgeInsets.all(12),
+              child: Image.memory(_transparentBytes!, width: 320),
             ),
         ],
       ),
