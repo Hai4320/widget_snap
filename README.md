@@ -34,7 +34,7 @@ package, no platform code. Only `flutter` itself, which is why it runs on
 ### Larger than the screen? One call.
 
 <p align="center">
-  <img src="doc/demo_tall.png" alt="A month-long activity report, far taller than any screen, captured in a single toPngBytes call" width="300">
+  <img src="doc/demo_tall.png" alt="A two-week activity report, far taller than a phone screen, captured in a single toPngBytes call" width="300">
 </p>
 
 This report never fits a phone screen — it was captured in a single
