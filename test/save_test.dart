@@ -36,4 +36,29 @@ void main() {
       throwsArgumentError,
     );
   });
+
+  testWidgets('toPngFile rejects an empty or whitespace-only filename', (
+    tester,
+  ) async {
+    late BuildContext ctx;
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (c) {
+            ctx = c;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+
+    await expectLater(
+      const SizedBox(width: 10, height: 10).toPngFile(ctx, filename: ''),
+      throwsArgumentError,
+    );
+    await expectLater(
+      const SizedBox(width: 10, height: 10).toPngFile(ctx, filename: '   '),
+      throwsArgumentError,
+    );
+  });
 }

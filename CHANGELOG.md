@@ -11,8 +11,9 @@
   (never below 1.0). Very tall/wide captures that previously risked clipping
   or OOM on low-end devices now come out whole, at a proportionally lower
   raster scale.
-- `toPngFile` now throws an `ArgumentError` when `filename` contains a path
-  separator, instead of silently writing outside the system temp dir.
+- `toPngFile` now throws an `ArgumentError` when `filename` is empty or
+  contains a path separator, instead of silently writing outside the system
+  temp dir or failing with an obscure filesystem error.
 - Docs: deterministic `precacheImage` recipe for async images (instead of
   guessing a `delay`); note that a fresh tree is captured, so live runtime
   state (checked boxes, typed text, scroll position) doesn't carry over.

@@ -167,8 +167,8 @@ gallery, upload, …).
   remains as a time-based fallback.
 - **Files are temporary.** `toPngFile` writes under the system temp dir,
   which the OS may clean at any time (iOS routinely does). Move the file if
-  you need it to persist. `filename` must be a bare name — path separators
-  throw an `ArgumentError`.
+  you need it to persist. `filename` must be a non-empty bare name — an
+  empty name or path separators throw an `ArgumentError`.
 - **Flutter-version sensitive.** Uses the internal render-pipeline API
   (`ViewConfiguration.logicalConstraints`, `RenderView(view:)`). Verified on
   Flutter 3.35 and 3.41 (tests run on the VM and in Chrome). If a Flutter

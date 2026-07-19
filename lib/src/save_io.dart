@@ -11,9 +11,9 @@ extension WidgetSnapPngFile on Widget {
   /// the written file's path. Use this when the next step needs a path (share
   /// sheet, gallery save); use `toPngBytes` directly for upload/preview.
   ///
-  /// [filename] must be a bare file name (`report.png`), not a path: the
-  /// file always lands under the system temp dir, and a path separator in
-  /// the name throws an [ArgumentError].
+  /// [filename] must be a non-empty bare file name (`report.png`), not a
+  /// path: the file always lands under the system temp dir. An empty name
+  /// or a path separator in the name throws an [ArgumentError].
   ///
   /// Not supported on the web — throws [UnsupportedError] there. Use
   /// `toPngBytes` and trigger a browser download instead.
@@ -31,13 +31,16 @@ extension WidgetSnapPngFile on Widget {
     Color backgroundColor = Colors.white,
   }) async {
     // Fail fast: 'exports/a.png' would silently write outside the temp dir
-    // (or die deep inside File with an obscure ENOENT).
-    if (filename.contains('/') || filename.contains(r'\')) {
+    // (or die deep inside File with an obscure ENOENT), and an empty name
+    // points at the directory itself.
+    if (filename.trim().isEmpty ||
+        filename.contains('/') ||
+        filename.contains(r'\')) {
       throw ArgumentError.value(
         filename,
         'filename',
-        'must be a bare file name (no path separators): the file is always '
-            'written under the system temp directory',
+        'must be a non-empty bare file name (no path separators): the file '
+            'is always written under the system temp directory',
       );
     }
     final bytes = await toPngBytes(
